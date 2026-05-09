@@ -1,12 +1,611 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
-    <title>Personality Analyzer Chat</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محلل الشخصية - Personality Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        /* شاشة البداية */
+        .start-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .start-screen h2 {
+            color: #1e293b;
+            margin-bottom: 15px;
+        }
+
+        .start-screen p {
+            color: #64748b;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+        }
+
+        /* شاشة الأسئلة */
+        .quiz-screen {
+            display: none;
+        }
+
+        .progress {
+            background: #e2e8f0;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .question-number {
+            color: #4f46e5;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .option:hover {
+            background: #ede9fe;
+            border-color: #4f46e5;
+        }
+
+        .option.selected {
+            background: #ede9fe;
+            border-color: #4f46e5;
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.2);
+        }
+
+        .option input {
+            width: 20px;
+            height: 20px;
+            accent-color: #4f46e5;
+            cursor: pointer;
+        }
+
+        .option label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #334155;
+        }
+
+        .quiz-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .next-btn, .prev-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .next-btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            flex: 1;
+        }
+
+        .prev-btn {
+            background: #e2e8f0;
+            color: #475569;
+            display: none;
+        }
+
+        .next-btn:hover, .prev-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* شاشة النتيجة */
+        .result-screen {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .result-type {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #4f46e5;
+            margin-bottom: 15px;
+        }
+
+        .result-description {
+            color: #334155;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .result-tips {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 20px;
+            text-align: right;
+            margin-bottom: 25px;
+        }
+
+        .result-tips h4 {
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .result-tips p {
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 600px) {
+            .content { padding: 20px; }
+            .question-text { font-size: 1.1rem; }
+            .option { padding: 12px 15px; }
+            .option label { font-size: 0.9rem; }
+            .header h1 { font-size: 1.5rem; }
+        }
+    </style>
 </head>
 <body>
-    <h1>مرحباً بك في Personality Analyzer Chat</h1>
-    <p>موقعك يعمل الآن بنجاح 🎉</p>
-    <p>تم إنشاء هذه الصفحة بنجاح على GitHub Pages</p>
+    <div class="container">
+        <div class="header">
+            <h1>🔮 محلل الشخصية</h1>
+            <p>اكتشف نمط شخصيتك من خلال هذا الاختبار العلمي البسيط</p>
+        </div>
+
+        <div class="content">
+            <!-- شاشة البداية -->
+            <div class="start-screen" id="startScreen">
+                <h2>✨ مرحباً بك في اختبار تحليل الشخصية ✨</h2>
+                <p>هذا الاختبار مكون من 8 أسئلة سريعة، أجب بصدق للحصول على نتيجة دقيقة تعكس شخصيتك الحقيقية.</p>
+                <button class="start-btn" onclick="startQuiz()">🚀 ابدأ الاختبار</button>
+            </div>
+
+            <!-- شاشة الأسئلة -->
+            <div class="quiz-screen" id="quizScreen">
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="question-number" id="questionNumber">السؤال 1 من 8</div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+                <div class="quiz-buttons">
+                    <button class="prev-btn" id="prevBtn" onclick="prevQuestion()">السابق</button>
+                    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">التالي</button>
+                </div>
+            </div>
+
+            <!-- شاشة النتيجة -->
+            <div class="result-screen" id="resultScreen">
+                <div class="result-icon">🎉</div>
+                <div class="result-type" id="resultType"></div>
+                <div class="result-description" id="resultDescription"></div>
+                <div class="result-tips" id="resultTips">
+                    <h4>💡 نصائح لك:</h4>
+                    <p id="tipsText"></p>
+                </div>
+                <button class="restart-btn" onclick="restartQuiz()">🔄 إعادة الاختبار</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>📊 اختبار تحليل الشخصية | أجب بصدق للحصول على أفضل نتيجة</p>
+        </div>
+    </div>
+
+    <script>
+        // الأسئلة والبيانات
+        const questions = [
+            {
+                text: "في التجمعات الاجتماعية، أنت عادةً:",
+                options: [
+                    "أكون مركز الاهتمام وأتفاعل مع الجميع",
+                    "أتحدث مع مجموعة صغيرة من الأصدقاء",
+                    "أفضل البقاء بجانب الأشخاص الذين أعرفهم جيداً",
+                    "أشعر بالرغبة في المغادرة مبكراً"
+                ]
+            },
+            {
+                text: "عند مواجهة مشكلة صعبة، أنت:",
+                options: [
+                    "أحاول حلها فوراً بطريقة عملية",
+                    "أفكر فيها بعمق لوقت طويل قبل التصرف",
+                    "أطلب المساعدة من الآخرين",
+                    "أشعر بالتوتر وأتجنب التفكير فيها"
+                ]
+            },
+            {
+                text: "أي من هذه يصفك أكثر؟",
+                options: [
+                    "منظم ودقيق وأحب الخطط",
+                    "مرن وعفوي وأحب التغيير",
+                    "متوازن بين التنظيم والمرونة",
+                    "عشوائي إلى حد ما، كل شيء حسب المزاج"
+                ]
+            },
+            {
+                text: "في العمل أو الدراسة، نقاط قوتك هي:",
+                options: [
+                    "القيادة واتخاذ القرارات",
+                    "الإبداع والتفكير خارج الصندوق",
+                    "العمل الجماعي والتعاون مع الآخرين",
+                    "التركيز على التفاصيل والدقة"
+                ]
+            },
+            {
+                text: "كيف تتعامل مع النقد؟",
+                options: [
+                    "أتلقاه بصدر رحب وأستفيد منه",
+                    "أسمعه ولكني آخذه بعين الاعتبار قليلاً",
+                    "أتضايق ولكني أحاول تحسين نفسي",
+                    "لا يعجبني وقد أنزعج من الناقد"
+                ]
+            },
+            {
+                text: "في أوقات الفراغ، أفضل:",
+                options: [
+                    "الخروج مع الأصدقاء والعائلة",
+                    "القراءة أو تعلم شيء جديد",
+                    "مشاهدة الأفلام أو المسلسلات",
+                    "النوم أو الراحة دون فعل شيء محدد"
+                ]
+            },
+            {
+                text: "اختر العبارة التي تناسبك أكثر:",
+                options: [
+                    "أحب التحديات وأسعى لتحقيق أهدافي",
+                    "أحب الاستكشاف والتجربة",
+                    "أحب مساعدة الآخرين وإسعادهم",
+                    "أحب الاستقرار والهدوء"
+                ]
+            },
+            {
+                text: "في النقاشات والحوارات، أنت:",
+                options: [
+                    "أعبر عن رأيي بثقة وأحب أن أكون مقنعاً",
+                    "أستمع جيداً ثم أعطي رأيي",
+                    "أتجنب النقاش للحفاظ على العلاقات",
+                    "أشعر بالارتباك وأفضل عدم المشاركة"
+                ]
+            }
+        ];
+
+        // أنماط الشخصية
+        const personalityTypes = {
+            'القيادي': {
+                description: 'أنت شخص قيادي بطبيعتك، تمتلك ثقة عالية بالنفس وقدرة على التأثير في الآخرين. تحب التحديات وتسعى دائماً لتحقيق الأهداف. أنت جريء في قراراتك ولا تخاف من المسؤولية. الآخرون يرون فيك قدوة وقد يلجأون إليك للحصول على التوجيه.',
+                tips: '• حاول تطوير مهارات الاستماع للآخرين\n• وازن بين الحزم والمرونة\n• اهتم بتطوير فريقك ولا تعتمد فقط على نفسك\n• تعلم كيف تتقبل النقد البناء'
+            },
+            'المفكر': {
+                description: 'أنت شخص مفكر وعميق، تحب التحليل والاستكشاف. تميل إلى التفكير المنطقي وحل المشكلات بطرق إبداعية. أنت فضولي وتسعى دائماً للمعرفة والاكتشاف. الناس يرون فيك شخصاً حكيماً يمكن الاعتماد عليه في اتخاذ القرارات المهمة.',
+                tips: '• شارك أفكارك مع الآخرين بشكل أكبر\n• تعلم تطبيق أفكارك عملياً على أرض الواقع\n• وازن بين التفكير والعمل\n• لا تهمل جانب المشاعر في تعاملاتك'
+            },
+            'الاجتماعي': {
+                description: 'أنت شخص اجتماعي ودود، تحب التفاعل مع الناس ومساعدتهم. تمتلك مهارات تواصل ممتازة وتجذب الآخرين بطبيعتك المرحة. أنت روح المجموعة وتستطيع خلق جو من المرح والإيجابية أينما كنت.',
+                tips: '• خصص وقتاً لنفسك للراحة والتأمل\n• تعلم قول "لا" عندما تحتاج لذلك\n• طور مهارات الاستماع العميق\n• اهتم ببناء علاقات عميقة وليست فقط سطحية'
+            },
+            'الحذر': {
+                description: 'أنت شخص حذر ومنظم، تحب الاستقرار والتخطيط المسبق. تمتلك دقة عالية في العمل واهتماماً بالتفاصيل. أنت جدير بالثقة وملتزم بمواعيدك ووعودك. الآخرون يشعرون بالأمان بجانبك ويعتمدون عليك.',
+                tips: '• جرب الخروج من منطقة الراحة بين الحين والآخر\n• تعلم التعامل مع التغيير بشكل إيجابي\n• خذ مخاطر محسوبة قد تقودك لفرص أفضل\n• وازن بين الدقة والسرعة في الإنجاز'
+            },
+            'المتوازن': {
+                description: 'أنت شخص متوازن ومتعدد المواهب. تمتلك القدرة على التكيف مع مختلف المواقف والأشخاص. أنت تجمع بين صفات القائد والمفكر والصديق الوفي. شخصيتك مرنة وتستطيع التأقلم في أي بيئة.',
+                tips: '• استمر في تطوير جميع جوانب شخصيتك\n• حدد أولوياتك بدقة أكبر\n• لا تحاول إرضاء الجميع على حساب نفسك\n• ركز على نقاط قوتك الأساسية'
+            }
+        };
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+        let quizStarted = false;
+
+        // دالة بدء الاختبار
+        function startQuiz() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            document.getElementById('resultScreen').style.display = 'none';
+            quizStarted = true;
+            currentQuestion = 0;
+            answers = new Array(questions.length).fill(null);
+            showQuestion();
+            updateProgress();
+        }
+
+        // عرض السؤال الحالي
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('questionNumber').innerHTML = `السؤال ${currentQuestion + 1} من ${questions.length}`;
+            document.getElementById('questionText').innerHTML = q.text;
+            
+            // عرض الخيارات
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = `option ${answers[currentQuestion] === idx ? 'selected' : ''}`;
+                optionDiv.onclick = () => selectOption(idx);
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'question';
+                radio.value = idx;
+                radio.checked = answers[currentQuestion] === idx;
+                radio.onclick = (e) => {
+                    e.stopPropagation();
+                    selectOption(idx);
+                };
+                
+                const label = document.createElement('label');
+                label.innerHTML = opt;
+                
+                optionDiv.appendChild(radio);
+                optionDiv.appendChild(label);
+                container.appendChild(optionDiv);
+            });
+            
+            // إظهار/إخفاء زر السابق
+            const prevBtn = document.getElementById('prevBtn');
+            prevBtn.style.display = currentQuestion > 0 ? 'block' : 'none';
+            
+            // تغيير نص زر التالي في السؤال الأخير
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.innerHTML = '🏁 عرض النتيجة';
+            } else {
+                nextBtn.innerHTML = 'التالي ←';
+            }
+        }
+
+        // اختيار إجابة
+        function selectOption(optionIndex) {
+            answers[currentQuestion] = optionIndex;
+            showQuestion(); // لإعادة عرض الخيارات مع تحديث التحديد
+        }
+
+        // الانتقال للسؤال التالي
+        function nextQuestion() {
+            if (answers[currentQuestion] === null) {
+                alert('الرجاء اختيار إجابة قبل المتابعة');
+                return;
+            }
+            
+            if (currentQuestion === questions.length - 1) {
+                calculateResult();
+            } else {
+                currentQuestion++;
+                showQuestion();
+                updateProgress();
+            }
+        }
+
+        // العودة للسؤال السابق
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+                updateProgress();
+            }
+        }
+
+        // تحديث شريط التقدم
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        // حساب النتيجة
+        function calculateResult() {
+            // تحليل الإجابات وتحديد النمط
+            let scores = {
+                'القيادي': 0,
+                'المفكر': 0,
+                'الاجتماعي': 0,
+                'الحذر': 0,
+                'المتوازن': 0
+            };
+            
+            answers.forEach((answer, idx) => {
+                if (answer !== null) {
+                    if (idx === 0) { // السؤال الأول: اجتماعي
+                        if (answer === 0) scores['القيادي'] += 3;
+                        else if (answer === 1) scores['الاجتماعي'] += 3;
+                        else if (answer === 2) scores['الحذر'] += 2;
+                        else scores['المفكر'] += 1;
+                    }
+                    else if (idx === 1) { // حل المشكلات
+                        if (answer === 0) scores['القيادي'] += 3;
+                        else if (answer === 1) scores['المفكر'] += 3;
+                        else if (answer === 2) scores['الاجتماعي'] += 2;
+                        else scores['الحذر'] += 1;
+                    }
+                    else if (idx === 2) { // التنظيم
+                        if (answer === 0) scores['الحذر'] += 3;
+                        else if (answer === 1) scores['القيادي'] += 2;
+                        else if (answer === 2) scores['المتوازن'] += 3;
+                        else scores['الاجتماعي'] += 1;
+                    }
+                    else if (idx === 3) { // العمل
+                        if (answer === 0) scores['القيادي'] += 3;
+                        else if (answer === 1) scores['المفكر'] += 3;
+                        else if (answer === 2) scores['الاجتماعي'] += 3;
+                        else scores['الحذر'] += 2;
+                    }
+                    else if (idx === 4) { // النقد
+                        if (answer === 0) scores['المتوازن'] += 3;
+                        else if (answer === 1) scores['القيادي'] += 2;
+                        else if (answer === 2) scores['المفكر'] += 2;
+                        else scores['الحذر'] += 1;
+                    }
+                    else if (idx === 5) { // الفراغ
+                        if (answer === 0) scores['الاجتماعي'] += 3;
+                        else if (answer === 1) scores['المفكر'] += 3;
+                        else if (answer === 2) scores['المتوازن'] += 2;
+                        else scores['الحذر'] += 1;
+                    }
+                    else if (idx === 6) { // التحديات
+                        if (answer === 0) scores['القيادي'] += 3;
+                        else if (answer === 1) scores['المفكر'] += 3;
+                        else if (answer === 2) scores['الاجتماعي'] += 3;
+                        else scores['الحذر'] += 2;
+                    }
+                    else if (idx === 7) { // النقاشات
+                        if (answer === 0) scores['القيادي'] += 3;
+                        else if (answer === 1) scores['المفكر'] += 2;
+                        else if (answer === 2) scores['الاجتماعي'] += 3;
+                        else scores['الحذر'] += 2;
+                    }
+                }
+            });
+            
+            // إضافة نقاط التوازن لمن لم يحدد نمط واضح
+            let maxScore = Math.max(...Object.values(scores));
+            let candidates = Object.keys(scores).filter(key => scores[key] === maxScore);
+            
+            let personalityType = candidates[0];
+            
+            // إظهار النتيجة
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            document.getElementById('resultType').innerHTML = personalityType;
+            document.getElementById('resultDescription').innerHTML = personalityTypes[personalityType].description;
+            document.getElementById('tipsText').innerHTML = personalityTypes[personalityType].tips.replace(/\n/g, '<br>');
+            
+            // تغيير الأيقونة حسب النوع
+            const iconMap = {
+                'القيادي': '👑',
+                'المفكر': '🧠',
+                'الاجتماعي': '🎭',
+                'الحذر': '🛡️',
+                'المتوازن': '⚖️'
+            };
+            document.querySelector('.result-icon').innerHTML = iconMap[personalityType] || '🎉';
+        }
+
+        // إعادة الاختبار
+        function restartQuiz() {
+            startQuiz();
+        }
+    </script>
 </body>
 </html>
